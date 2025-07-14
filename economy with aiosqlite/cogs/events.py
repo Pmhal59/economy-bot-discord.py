@@ -17,10 +17,20 @@ class Events(commands.Cog):
             return
 
         if isinstance(error, commands.errors.MissingPermissions) or isinstance(error, commands.errors.NotOwner):
-            return await ctx.reply("You cannot use this command")
+            embed = discord.Embed(
+                title="Error ❌",
+                description="You cannot use this command.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         if isinstance(error, commands.errors.MemberNotFound):
-            return await ctx.reply("the member you provided is incorrect or not found")
+            embed = discord.Embed(
+                title="Error ❌",
+                description="The member you provided is incorrect or not found.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         if isinstance(error, commands.errors.MissingRequiredArgument):
             cmd_parent = ctx.command.parent
@@ -49,7 +59,9 @@ class Events(commands.Cog):
                 usage += cmd_usage
 
             em = discord.Embed(
-                description=f"**Correct usage**\n`{usage}`"
+                title="Error ❌",
+                description=f"**Correct usage**\n`{usage}`",
+                color=discord.Color.red()
             )
             if len(aliases) >= 1:
                 em.add_field(name="Aliases", value=', '.join(aliases))
@@ -58,7 +70,12 @@ class Events(commands.Cog):
 
         if isinstance(error, commands.errors.CommandOnCooldown):
             time_left = timedelta(seconds=error.retry_after)
-            return await ctx.reply(f"You are on cooldown. Try after `{time_left.__str__()}`", mention_author=False)
+            embed = discord.Embed(
+                title="Cooldown ⌛",
+                description=f"You are on cooldown. Try after `{time_left.__str__()}`",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         raise error
 

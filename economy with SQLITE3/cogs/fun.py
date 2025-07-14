@@ -22,22 +22,42 @@ class Fun(commands.Cog):
 
         bet_on = "heads" if "h" in bet_on.lower() else "tails"
         if not 500 <= amount <= 5000:
-            return await ctx.reply("You can only bet amount between 500 and 5000", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="You can only bet amount between `500` and `5000`.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         reward = round(amount / 2)
         users = await self.bank.get_acc(user)
         if users[1] < amount:
-            return await ctx.reply("You don't have enough money", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="You don't have enough money.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         coin = ["heads", "tails"]
         result = random.choice(coin)
 
         if result != bet_on:
             await self.bank.update_acc(user, -amount)
-            return await ctx.reply(f"Got {result}, you lost {amount:,}", mention_author=False)
+            embed = discord.Embed(
+                title="Coin Flip",
+                description=f"Got **{result}**, you lost `{amount:,}` coins.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         await self.bank.update_acc(user, +reward)
-        return await ctx.reply(f"Got {result}, you won {amount + reward:,}", mention_author=False)
+        embed = discord.Embed(
+            title="Coin Flip",
+            description=f"Got **{result}**, you won `{amount + reward:,}` coins.",
+            color=discord.Color.green()
+        )
+        return await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(usage="<amount*: integer")
     @commands.guild_only()
@@ -45,11 +65,21 @@ class Fun(commands.Cog):
         user = ctx.author
         await self.bank.open_acc(user)
         if not 1000 <= amount <= 10000:
-            return await ctx.reply("You can only bet amount between 1000 and 10000", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="You can only bet amount between `1000` and `10000`.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         users = await self.bank.get_acc(user)
         if users[1] < amount:
-            return await ctx.reply("You don't have enough money", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="You don't have enough money.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         slot1 = ["💝", "🎉", "💎", "💵", "💰", "🚀", "🍿"]
         slot2 = ["💝", "🎉", "💎", "💵", "💰", "🚀", "🍿"]
@@ -57,6 +87,7 @@ class Fun(commands.Cog):
         sep = " | "
 
         em = discord.Embed(
+            title="Slot Machine",
             description=f"```\n"
                         f"| {sep.join(slot1[:3])} |\n"
                         f"| {sep.join(slot2[:3])} | 📍\n"
@@ -80,6 +111,7 @@ class Fun(commands.Cog):
             result.append([slot1[x], slot2[x], slot3[x]])
 
         em = discord.Embed(
+            title="Slot Machine",
             description=f"```\n"
                         f"| {sep.join(result[mid - 1])} |\n"
                         f"| {sep.join(result[mid])} | 📍\n"
@@ -94,14 +126,17 @@ class Fun(commands.Cog):
         if s1 == s2 == s3:
             reward = round(amount / 2)
             await self.bank.update_acc(user, +reward)
-            content = f"{user.mention} Jackpot! you won {amount + reward:,}"
+            content = f"{user.mention} Jackpot! you won `{amount + reward:,}` coins."
+            em.color = discord.Color.green()
         elif s1 == s2 or s2 == s3 or s1 == s3:
             reward = round(amount / 4)
             await self.bank.update_acc(user, +reward)
-            content = f"{user.mention} GG! you only won {amount + reward:,}"
+            content = f"{user.mention} GG! you only won `{amount + reward:,}` coins."
+            em.color = discord.Color.green()
         else:
             await self.bank.update_acc(user, -amount)
-            content = f"{user.mention} You lost {amount:,}"
+            content = f"{user.mention} You lost `{amount:,}` coins."
+            em.color = discord.Color.red()
 
         return await msg.edit(content=content, embed=em)
 
@@ -112,23 +147,49 @@ class Fun(commands.Cog):
 
         rdice = [1, 2, 3, 4, 5, 6]
         if bet_on not in rdice:
-            return await ctx.reply("Enter a number of dice(1 - 6)", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="Enter a number of dice between `1` and `6`.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         if not 1000 <= amount <= 5000:
-            return await ctx.reply("You can only bet amount between 1000 and 5000", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="You can only bet amount between `1000` and `5000`.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         users = await self.bank.get_acc(user)
         if users[1] < amount:
-            return await ctx.reply("You don't have enough money", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="You don't have enough money.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         rand_num = random.choice(rdice)
         if rand_num != bet_on:
             await self.bank.update_acc(user, -amount)
-            return await ctx.reply(f"Got {rand_num}, you lost {amount:,}", mention_author=False)
+            embed = discord.Embed(
+                title="Dice",
+                description=f"Got **{rand_num}**, you lost `{amount:,}` coins.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         reward = round(amount / 2)
         await self.bank.update_acc(user, +reward)
-        await ctx.reply(f"Got {rand_num}, you won {amount + reward:,}", mention_author=False)
+
+        embed = discord.Embed(
+            title="Dice",
+            description=f"Got **{rand_num}**, you won `{amount + reward:,}` coins.",
+            color=discord.Color.green()
+        )
+        await ctx.reply(embed=embed, mention_author=False)
 
 
 # if you are using 'discord.py >=v2.0' comment(remove) below code

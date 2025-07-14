@@ -27,20 +27,46 @@ class Admin(commands.Cog):
     async def add_money(self, ctx, member: discord.Member, amount: str, mode: str = "wallet"):
         mode = mode.lower()
         if member.bot:
-            return await ctx.reply("You can't add money to a bot", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="You can't add money to a bot.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
         if not amount.isdigit() or int(amount) <= 0:
-            return await ctx.reply("Please enter a valid amount")
+            embed = discord.Embed(
+                title="Error ❌",
+                description="Please enter a valid amount.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
         if mode not in ["wallet", "bank"]:
-            return await ctx.reply("Please enter either wallet or bank only")
+            embed = discord.Embed(
+                title="Error ❌",
+                description="Please enter either wallet or bank only.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         limit = 100_000
         amount = int(amount)
         if amount > limit:
-            return await ctx.reply(f"You cannot add money more than {limit:,}")
+            embed = discord.Embed(
+                title="Error ❌",
+                description=f"You cannot add money more than {limit:,}.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         await self.bank.open_acc(member)
         await self.bank.update_acc(member, +amount, mode)
-        await ctx.reply(f"You added {amount:,} in {member.mention}'s {mode}", mention_author=False)
+
+        embed = discord.Embed(
+            title="Success ✅",
+            description=f"You added `{amount:,}` in {member.mention}'s {mode}.",
+            color=discord.Color.green()
+        )
+        await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(aliases=["remoney"], usage="<member*: @member> <amount*: integer> <mode: wallet or bank>")
     @commands.is_owner()
@@ -48,11 +74,26 @@ class Admin(commands.Cog):
     async def remove_money(self, ctx, member: discord.Member, amount: str, mode: str = "wallet"):
         mode = mode.lower()
         if member.bot:
-            return await ctx.reply("You can't remove money from a bot", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="You can't remove money from a bot.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
         if not amount.isdigit() or int(amount) <= 0:
-            return await ctx.reply("Please enter a valid amount")
+            embed = discord.Embed(
+                title="Error ❌",
+                description="Please enter a valid amount.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
         if mode not in ["wallet", "bank"]:
-            return await ctx.reply("Please enter either wallet or bank only")
+            embed = discord.Embed(
+                title="Error ❌",
+                description="Please enter either wallet or bank only.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         amount = int(amount)
         await self.bank.open_acc(member)
@@ -60,19 +101,33 @@ class Admin(commands.Cog):
         users = await self.bank.get_acc(member)
         user_amt = users[2 if mode == "bank" else 1]
         if user_amt < amount:
-            return await ctx.reply(
-                f"You can only remove {user_amt:,} from {member.mention}'s {mode}"
+            embed = discord.Embed(
+                title="Error ❌",
+                description=f"You can only remove `{user_amt:,}` from {member.mention}'s {mode}.",
+                color=discord.Color.red()
             )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         await self.bank.update_acc(member, -amount, mode)
-        await ctx.reply(f"You removed {amount:,} from {member.mention}'s {mode}", mention_author=False)
+
+        embed = discord.Embed(
+            title="Success ✅",
+            description=f"You removed `{amount:,}` from {member.mention}'s {mode}.",
+            color=discord.Color.green()
+        )
+        await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(usage="<member*: @member>")
     @commands.is_owner()
     @commands.cooldown(2, 3 * 60, commands.BucketType.user)
     async def reset_user(self, ctx, member: discord.Member):
         if member.bot:
-            return await ctx.reply("Bots don't have account", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="Bots don't have an account.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         users = await self.bank.get_acc(member)
         if users is None:
@@ -80,7 +135,12 @@ class Admin(commands.Cog):
         else:
             await self.bank.reset_acc(member)
 
-        return await ctx.reply(f"{member.mention}'s account has been reset", mention_author=False)
+        embed = discord.Embed(
+            title="Success ✅",
+            description=f"{member.mention}'s account has been reset.",
+            color=discord.Color.green()
+        )
+        return await ctx.reply(embed=embed, mention_author=False)
 
 
 # if you are using 'discord.py >=v2.0' comment(remove) below code

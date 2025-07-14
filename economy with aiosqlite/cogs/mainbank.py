@@ -17,7 +17,12 @@ class MainBank(commands.Cog):
         user = member or ctx.author
         user_av = user.display_avatar or user.default_avatar
         if user.bot:
-            return await ctx.reply("Bot's don't have account", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="Bots don't have an account.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
         await self.bank.open_acc(user)
 
         users = await self.bank.get_acc(user)
@@ -26,9 +31,10 @@ class MainBank(commands.Cog):
         net_amt = int(wallet_amt + bank_amt)
 
         em = discord.Embed(
-            description=f"Wallet: {wallet_amt}\nBank: {bank_amt}\n"
-                        f"Net: {net_amt}",
-            color=0x00ff00
+            description=f"**Wallet:** `{wallet_amt:,}`\n"
+                        f"**Bank:** `{bank_amt:,}`\n"
+                        f"**Net:** `{net_amt:,}`",
+            color=discord.Color.green()
         )
         em.set_author(name=f"{user.name}'s Balance", icon_url=user_av.url)
         await ctx.reply(embed=em, mention_author=False)
@@ -45,17 +51,37 @@ class MainBank(commands.Cog):
         if amount.lower() == "all" or amount.lower() == "max":
             await self.bank.update_acc(user, +1 * bank_amt)
             await self.bank.update_acc(user, -1 * bank_amt, "bank")
-            return await ctx.reply(f"You withdrew {bank_amt:,} in your wallet", mention_author=False)
+            embed = discord.Embed(
+                title="Success ✅",
+                description=f"You withdrew `{bank_amt:,}` in your wallet.",
+                color=discord.Color.green()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         amount = int(amount)
         if amount > bank_amt:
-            return await ctx.reply(f"You don't have that enough money!", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="You don't have that much money!",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
         if amount < 0:
-            return await ctx.reply("Enter a valid amount !", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="Enter a valid amount!",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         await self.bank.update_acc(user, +amount)
         await self.bank.update_acc(user, -amount, "bank")
-        await ctx.reply(f"You withdrew {amount:,} from your bank", mention_author=False)
+        embed = discord.Embed(
+            title="Success ✅",
+            description=f"You withdrew `{amount:,}` from your bank.",
+            color=discord.Color.green()
+        )
+        await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(aliases=["dep"], usage="<amount*: integer or all>")
     @commands.guild_only()
@@ -68,24 +94,49 @@ class MainBank(commands.Cog):
         if amount.lower() == "all" or amount.lower() == "max":
             await self.bank.update_acc(user, -wallet_amt)
             await self.bank.update_acc(user, +wallet_amt, "bank")
-            return await ctx.reply(f"You deposited {wallet_amt:,} in your bank", mention_author=False)
+            embed = discord.Embed(
+                title="Success ✅",
+                description=f"You deposited `{wallet_amt:,}` in your bank.",
+                color=discord.Color.green()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         amount = int(amount)
         if amount > wallet_amt:
-            return await ctx.reply(f"You don't have that enough money!", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="You don't have that much money!",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
         if amount < 0:
-            return await ctx.reply(f"Enter a valid amount !", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="Enter a valid amount!",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         await self.bank.update_acc(user, -amount)
         await self.bank.update_acc(user, +amount, "bank")
-        await ctx.reply(f"You deposited {amount:,} in your bank", mention_author=False)
+        embed = discord.Embed(
+            title="Success ✅",
+            description=f"You deposited `{amount:,}` in your bank.",
+            color=discord.Color.green()
+        )
+        await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(usage="<member*: @member> <amount*: integer>")
     @commands.guild_only()
     async def send(self, ctx, member: discord.Member, amount: int):
         user = ctx.author
         if member.bot:
-            return await ctx.reply("Bot's don't have account", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="Bots don't have an account.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         await self.bank.open_acc(user)
         await self.bank.open_acc(member)
@@ -93,13 +144,28 @@ class MainBank(commands.Cog):
         users = await self.bank.get_acc(user)
         wallet_amt = users[1]
         if amount <= 0:
-            return await ctx.reply("Enter a valid amount !", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="Enter a valid amount!",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
         if amount > wallet_amt:
-            return await ctx.reply("You don't have enough amount", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="You don't have enough amount.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         await self.bank.update_acc(user, -amount)
         await self.bank.update_acc(member, +amount)
-        await ctx.reply(f"You sent {amount:,} to {member.mention}", mention_author=False)
+        embed = discord.Embed(
+            title="Success ✅",
+            description=f"You sent `{amount:,}` to {member.mention}.",
+            color=discord.Color.green()
+        )
+        await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(aliases=["lb"])
     @commands.guild_only()

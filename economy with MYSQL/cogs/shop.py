@@ -17,8 +17,8 @@ class Shop(commands.Cog):
         await self.inv.open_acc(user)
 
         em = discord.Embed(
-            title="SHOP",
-            color=discord.Color(0x00ff00)
+            title="Shop",
+            color=discord.Color.green()
         )
         x = 1
         for item in self.inv.shop_items:
@@ -29,7 +29,7 @@ class Shop(commands.Cog):
 
             x += 1
             if x > 1:
-                em.add_field(name=f"{name.upper()} -- {cost}",
+                em.add_field(name=f"{name.upper()} -- {cost:,}",
                              value=f"{item_info}\nID: `{item_id}`", inline=False)
 
         await ctx.reply(embed=em, mention_author=False)
@@ -42,21 +42,27 @@ class Shop(commands.Cog):
             cost = item["cost"]
             item_info = item["info"]
 
-            if name == item_name:
+            if name.lower() == item_name.lower():
                 em = discord.Embed(
                     description=item_info,
-                    title=f"{name.upper()}"
+                    title=f"{name.upper()}",
+                    color=discord.Color.blue()
                 )
 
                 sell_amt = int(cost / 4)
 
-                em.add_field(name="Buying price", value=cost, inline=False)
+                em.add_field(name="Buying price", value=f"`{cost:,}`", inline=False)
                 em.add_field(name="Selling price",
-                             value=str(sell_amt), inline=False)
+                             value=f"`{sell_amt:,}`", inline=False)
 
                 return await ctx.reply(embed=em, mention_author=False)
 
-        await ctx.reply(f"There's no item named '{item_name}'", mention_author=False)
+        embed = discord.Embed(
+            title="Error ❌",
+            description=f"There's no item named `{item_name}`.",
+            color=discord.Color.red()
+        )
+        await ctx.reply(embed=embed, mention_author=False)
 
 
 # if you are using 'discord.py >=v2.0' comment(remove) below code

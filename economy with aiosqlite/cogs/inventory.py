@@ -17,10 +17,15 @@ class Inventory(commands.Cog):
         user = member or ctx.author
         user_av = user.display_avatar or user.default_avatar
         if user.bot:
-            return await ctx.reply("Bot's don't have account", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description="Bots don't have an account.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
         await self.inv.open_acc(user)
 
-        em = discord.Embed(color=0x00ff00)
+        em = discord.Embed(color=discord.Color.green())
         x = 1
         for item in self.inv.shop_items:
             name = item["name"]
@@ -44,19 +49,33 @@ class Inventory(commands.Cog):
         await self.bank.open_acc(user)
         await self.inv.open_acc(user)
         if item_name.lower() not in [item["name"].lower() for item in self.inv.shop_items]:
-            return await ctx.reply(f"Theirs no item named `{item_name}`", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description=f"There's no item named `{item_name}`.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         users = await self.bank.get_acc(user)
         for item in self.inv.shop_items:
             if item_name == item["name"].lower():
 
                 if users[1] < item["cost"]:
-                    return await ctx.reply(f"You don't have enough money to buy {item['name']}",
-                                           mention_author=False)
+                    embed = discord.Embed(
+                        title="Error ❌",
+                        description=f"You don't have enough money to buy {item['name']}.",
+                        color=discord.Color.red()
+                    )
+                    return await ctx.reply(embed=embed, mention_author=False)
 
                 await self.inv.update_acc(user, +1, item["name"])
                 await self.bank.update_acc(user, -item["cost"])
-                return await ctx.reply(f"You bought {item_name}", mention_author=False)
+                embed = discord.Embed(
+                    title="Success ✅",
+                    description=f"You bought **{item_name}**.",
+                    color=discord.Color.green()
+                )
+                return await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(usage="<item_name*: string>")
     async def sell(self, ctx, *, item_name: str):
@@ -64,19 +83,33 @@ class Inventory(commands.Cog):
         await self.bank.open_acc(user)
         await self.inv.open_acc(user)
         if item_name.lower() not in [item["name"].lower() for item in self.inv.shop_items]:
-            return await ctx.reply(f"Theirs no item named `{item_name}`", mention_author=False)
+            embed = discord.Embed(
+                title="Error ❌",
+                description=f"There's no item named `{item_name}`.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
 
         for item in self.inv.shop_items:
             if item_name.lower() == item["name"].lower():
                 cost = int(round(item["cost"] / 2, 0))
                 quantity = await self.inv.update_acc(user, 0, item["name"])
                 if quantity[0] < 1:
-                    return await ctx.reply(f"You don't have {item['name']} in your inventory",
-                                           mention_author=False)
+                    embed = discord.Embed(
+                        title="Error ❌",
+                        description=f"You don't have {item['name']} in your inventory.",
+                        color=discord.Color.red()
+                    )
+                    return await ctx.reply(embed=embed, mention_author=False)
 
                 await self.inv.update_acc(user, -1, item["name"])
                 await self.bank.update_acc(user, +cost)
-                return await ctx.reply(f"You sold {item_name} for {cost:,}", mention_author=False)
+                embed = discord.Embed(
+                    title="Success ✅",
+                    description=f"You sold **{item_name}** for `{cost:,}` coins.",
+                    color=discord.Color.green()
+                )
+                return await ctx.reply(embed=embed, mention_author=False)
 
 
 # if you are using 'discord.py >=v2.0' comment(remove) below code
