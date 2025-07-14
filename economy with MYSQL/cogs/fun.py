@@ -190,6 +190,60 @@ class Fun(commands.Cog):
         )
         await ctx.reply(embed=embed, mention_author=False)
 
+    @commands.command(aliases=["3dice"], usage="<bet_on*: small(4-10) or big(11-17)> <amount*: integer>")
+    @commands.guild_only()
+    async def three_dice(self, ctx, bet_on: str, amount: int):
+        user = ctx.author
+        await self.bank.open_acc(user)
+
+        bet_on = "small" if "s" in bet_on.lower() else "big"
+        if not 500 <= amount <= 5000:
+            embed = discord.Embed(
+                title="Error ❌",
+                description="You can only bet amount between `500` and `5000`.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
+
+        users = await self.bank.get_acc(user)
+        if users[1] < amount:
+            embed = discord.Embed(
+                title="Error ❌",
+                description="You don't have enough money.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
+
+        dice1 = random.randint(1, 6)
+        dice2 = random.randint(1, 6)
+        dice3 = random.randint(1, 6)
+        total = dice1 + dice2 + dice3
+
+        if 4 <= total <= 10:
+            result = "small"
+        else:
+            result = "big"
+
+        if result != bet_on:
+            await self.bank.update_acc(user, -amount)
+            embed = discord.Embed(
+                title="Three Dice",
+                description=f"The dice rolled `{dice1}`, `{dice2}`, `{dice3}` (total: **{total}**).\n"
+                            f"You bet on **{bet_on}** but the result was **{result}**. You lost `{amount:,}` coins.",
+                color=discord.Color.red()
+            )
+            return await ctx.reply(embed=embed, mention_author=False)
+
+        reward = amount * 2
+        await self.bank.update_acc(user, +reward)
+        embed = discord.Embed(
+            title="Three Dice",
+            description=f"The dice rolled `{dice1}`, `{dice2}`, `{dice3}` (total: **{total}**).\n"
+                        f"You bet on **{bet_on}** and won `{reward:,}` coins.",
+            color=discord.Color.green()
+        )
+        return await ctx.reply(embed=embed, mention_author=False)
+
 
 # if you are using 'discord.py >=v2.0' comment(remove) below code
 def setup(client):
